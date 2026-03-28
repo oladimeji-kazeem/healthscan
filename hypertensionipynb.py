@@ -53,7 +53,10 @@ def main():
     # Column order must match the training data (minus the target):
     # Age, Salt_Intake, Stress_Score, BP_History, Sleep_Duration,
     # BMI, Medication, Family_History, Exercise_Level, Smoking_Status
+    # NOTE: The model was trained with the CSV row index ('Unnamed: 0') as feature 1.
+    # We pass the dataset midpoint (992) as a neutral, non-skewing value.
     input_data = pd.DataFrame({
+        "Unnamed: 0":     [992],
         "Age":            [age],
         "Salt_Intake":    [salt_intake],
         "Stress_Score":   [stress_score],
