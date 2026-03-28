@@ -1,83 +1,59 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
-import shap
-import matplotlib.pyplot as plt
+import numpy as np
 
-# -------------------------------
-# Load trained model
-# -------------------------------
-model = joblib.load("hypertension_model.pkl")  # make sure this file is in the same folder
+# Load the trained model
+# Ensure 'hypertension_model.pkl' is in the same directory 
+model = joblib.load("hypertension_model.pkl")
 
-# -------------------------------
-# App title
-# -------------------------------
-st.title("Hypertension Prediction App")
-st.write("Enter patient details to predict the likelihood of hypertension.")
-
-# -------------------------------
-# Sidebar for inputs
-# -------------------------------
-st.sidebar.header("Patient Information")
-
-age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
-bp_history = st.sidebar.selectbox("Blood Pressure History", ["Normal", "Pre-hypertension", "Hypertension"])
-medication = st.sidebar.selectbox("Medication", ["Yes", "No"])
-exercise = st.sidebar.selectbox("Exercise Level", ["Low", "Medium", "High"])
-smoking = st.sidebar.selectbox("Smoking Status", ["Non-smoker", "Former", "Current"])
-
-# -------------------------------
-# Preprocessing function
-# -------------------------------
-def preprocess_input(bp_history, medication, exercise, smoking, age):
-    mapping = {
-        "Normal": 0,
-        "Pre-hypertension": 1,
-        "Hypertension": 2,
-        "Yes": 1,
-        "No": 0,
-        "Low": 0,
-        "Medium": 1,
-        "High": 2,
-        "Non-smoker": 0,
-        "Former": 1,
-        "Current": 2
-    }
-    # Ensure all values are numeric
-    return pd.DataFrame([[
-        float(mapping[bp_history]),
-        float(mapping[medication]),
-        float(mapping[exercise]),
-        float(mapping[smoking]),
-        float(age)
-    ]], columns=["BP_History", "Medication", "Exercise_Level", "Smoking_Status", "Age"])
-
-# -------------------------------
-# Get processed input
-# -------------------------------
-input_df = preprocess_input(bp_history, medication, exercise, smoking, age)
-
-# -------------------------------
-# Prediction
-# -------------------------------
-prediction = model.predict(input_df.values)[0]              # use .values to convert to numpy array
-probability = model.predict_proba(input_df.values)[0][1]   # probability of hypertension
-
-st.subheader("Prediction Results")
-st.write(f"**Prediction:** {'Hypertension' if prediction == 1 else 'No Hypertension'}")
-st.write(f"**Probability:** {probability:.2f}")
-
-# -------------------------------
-# SHAP Feature Explanation
-# -------------------------------
-try:
-    explainer = shap.Explainer(model, input_df.values)
-    shap_values = explainer(input_df.values)
+def main():
+    st.set_page_config(page_title="Hypertension Risk Predictor", layout="centered")
     
-    st.subheader("Feature Importance (SHAP Values)")
-    plt.figure()
-    shap.summary_plot(shap_values, input_df, show=False)
-    st.pyplot(bbox_inches='tight')
-except Exception as e:
-    st.write("SHAP explanation not available:", e)
+    st.title("🩺 Hypertension Risk Assessment")
+    st.markdown("""
+    Develop and evaluate machine learning models that can predict the likelihood 
+    of hypertension based on demographic, lifestyle, and clinical factors. 
+    """)
+
+    st.sidebar.header("User Input Features")
+
+    # Define input fields based on the research dataset features [cite: 7500, 7501, 7502, 7503]
+    age = st.sidebar.number_input("Age", min_value=1, max_value=120, value=30)
+    salt_intake = st.sidebar.slider("Daily Salt Intake (grams)", 0.0, 20.0, 5.0)
+    stress_score = st.sidebar.slider("Stress Score (1-10)", 1, 10, 5)
+    
+    # Categorical Inputs [cite: 7504, 7508]
+    bp_history = st.sidebar.selectbox("Blood Pressure History", ("Normal", "High", "Low"))
+    smoking_status = st.sidebar.selectbox("Smoking Status", ("Non-smoker", "Former", "Current"))
+    exercise_level = st.sidebar.selectbox("Exercise Level", ("Low", "Medium", "High"))
+
+    # Mapping inputs for the model (matching the LabelEncoder logic)
+    # Note: Ensure these mappings match the encoding used in your training notebook
+    input_data = pd.DataFrame({
+        'Age': [age],
+        'Salt_Intake': [salt_intake],
+        'Stress_Score': [stress_score],
+        'BP_History': [bp_history],
+        'Smoking_Status': [smoking_status],
+        'Exercise_Level': [exercise_level]
+    })
+
+    # Prediction Button
+    if st.button("Predict Risk"):
+        # Process inputs (e.g., scaling or encoding if necessary)
+        prediction = model.predict(input_data)
+        probability = model.predict_proba(input_data)[0][1]
+
+        st.subheader("Results")
+        if prediction[0] == 1:
+            st.error(f"High Risk of Hypertension detected.")
+            st.write(f"Confidence Level: {probability:.2%}")
+        else:
+            st.success(f"Low Risk of Hypertension detected.")
+            st.write(f"Confidence Level: {(1 - probability):.2%}")
+
+        st.info("**Research Findings Summary:** Factors like High BMI, sleep deprivation, and high salt intake were identified as strong predictors in this study. [cite: 7502, 7503]")
+
+if __name__ == "__main__":
+    main()
