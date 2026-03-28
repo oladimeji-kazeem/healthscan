@@ -29,7 +29,7 @@ import shap
 Develop and evaluate machine learning models that can predict the likelihood of hypertension based ondemographic, lifestyle, and clinical factors.
 """
 
-df_hypertension = pd.read_csv('/content/drive/MyDrive/seyi/datasetss/hypertention.csv')
+df_hypertension = pd.read_csv('hypertention.csv')
 
 """# **2. Research Key Questions**
 
