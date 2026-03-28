@@ -43,9 +43,21 @@ def preprocess_input(bp_history, medication, exercise, smoking, age):
 
 input_df = preprocess_input(bp_history, medication, exercise, smoking, age)
 
+from xgboost import XGBClassifier
+
+model = XGBClassifier(
+    eval_metric='logloss',  # must keep
+    n_estimators=100,
+    max_depth=3
+)
+
+
 # Predict
 prediction = model.predict(input_df.values)[0]
 probability = model.predict_proba(input_df.values)[0][1]
+
+eval_metric='logloss'  # for binary classification
+eval_metric='mlogloss' # for multiclass
 
 st.write(f"**Prediction:** {'Hypertension' if prediction == 1 else 'No Hypertension'}")
 st.write(f"**Probability:** {probability:.2f}")
