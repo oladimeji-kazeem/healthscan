@@ -38,14 +38,14 @@ def preprocess_input(bp_history, medication, exercise, smoking, age):
         mapping[medication],
         mapping[exercise],
         mapping[smoking],
-        age
+        float(age)  # make sure age is float
     ]], columns=["BP_History", "Medication", "Exercise_Level", "Smoking_Status", "Age"])
 
 input_df = preprocess_input(bp_history, medication, exercise, smoking, age)
 
 # Predict
-prediction = model.predict(input_df)[0]
-probability = model.predict_proba(input_df)[0][1]  # probability of hypertension
+prediction = model.predict(input_df.values)[0]
+probability = model.predict_proba(input_df.values)[0][1]
 
 st.write(f"**Prediction:** {'Hypertension' if prediction == 1 else 'No Hypertension'}")
 st.write(f"**Probability:** {probability:.2f}")
