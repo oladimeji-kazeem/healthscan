@@ -7,3 +7,4 @@ scikit-learn
 xgboost
 xgboost==1.7.6
 lightgbm==3.3.5
+shap
